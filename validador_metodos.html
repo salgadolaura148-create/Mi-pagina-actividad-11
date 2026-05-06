@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Validador_metodos</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0a1929;
+    --bg-secondary: #0d2137;
+    --bg-card: #112240;
+    --bg-input: #0a1929;
+    --border-color: #1e3a5f;
+    --text-primary: #e0e6ed;
+    --text-secondary: #8899aa;
+    --text-muted: #546e7a;
+    --cyan: #00e5ff;
+    --orange: #ff6d00;
+    --red: #ff5252;
+    --yellow: #ffd740;
+    --green: #69f0ae;
+    --radius: 8px;
+  }
+
+  html { font-size: 14px; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  .app { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+  header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 2rem 1rem;
+    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+  }
+  header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--cyan);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.25rem;
+  }
+  header p { color: var(--text-secondary); font-size: 0.95rem; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+  .panel h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--cyan);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .field { margin-bottom: 1rem; }
+  .field label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .field input, .field select {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 2px rgba(0,229,255,0.15);
+  }
+  .field input::placeholder { color: var(--text-muted); }
+  .hint {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .btn {
+    width: 100%;
+    padding: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #00b8d4, #00e5ff);
+    color: #0a1929;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,229,255,0.3); }
+  .btn:active { transform: translateY(0); }
+
+  .error {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255,82,82,0.1);
+    border: 1px solid rgba(255,82,82,0.3);
+    border-radius: 6px;
+    color: var(--red);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+  }
+
+  .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .metric {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .metric-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+  .metric-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 600;
+    word-break: break-all;
+  }
+  .c-cyan   { color: var(--cyan); }
+  .c-orange { color: var(--orange); }
+  .c-red    { color: var(--red); }
+  .c-yellow { color: var(--yellow); }
+
+  .chart-wrap { height: 400px; position: relative; }
+
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+  }
+  table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; }
+  thead th {
+    background: var(--bg-secondary);
+    color: var(--cyan);
+    padding: 0.65rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border-color);
+    white-space: nowrap;
+  }
+  tbody tr:hover { background: rgba(0,229,255,0.04); }
+  tbody tr:nth-child(even) { background: rgba(255,255,255,0.015); }
+  tbody td { padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.04); white-space: nowrap; }
+
+  .hidden { display: none; }
+  .mb { margin-bottom: 1.5rem; }
+
+  select optgroup { background: var(--bg-primary); font-weight: 700; color: var(--cyan); }
+  select option   { background: var(--bg-primary); color: var(--text-primary); }
+
+  @media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; }
+    .field-row { grid-template-columns: 1fr 1fr; }
+    .metrics-grid { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.5rem; }
+    .chart-wrap { height: 300px; }
+  }
+  @media (max-width: 480px) {
+    .app { padding: 0.75rem; }
+    .field-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Validador_metodos</h1>
+    <p>Solucionador de Ecuaciones Diferenciales Ordinarias de Primer Orden</p>
+  </header>
+
+  <div class="layout">
+    <!-- INPUTS -->
+    <div class="panel">
+      <h2>Parámetros de Entrada</h2>
+
+      <div class="field">
+        <label>dy/dx = f(x, y)</label>
+        <input id="dydx" type="text" value="x + y" placeholder="Ej: x + y" />
+        <span class="hint">Sintaxis: Math.sin, Math.cos, Math.exp, Math.log, Math.sqrt, Math.abs, **, *</span>
+      </div>
+
+      <div class="field">
+        <label>Solución exacta y(x) &nbsp;(opcional)</label>
+        <input id="exact" type="text" value="-x - 1 + 2*Math.exp(x)" placeholder="Ej: 2*Math.exp(x) - x - 1" />
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>x&#8320;</label>
+          <input id="x0" type="number" step="any" value="0" />
+        </div>
+        <div class="field">
+          <label>y&#8320;</label>
+          <input id="y0" type="number" step="any" value="1" />
+        </div>
+        <div class="field">
+          <label>h (paso)</label>
+          <input id="h" type="number" step="any" value="0.1" />
+        </div>
+        <div class="field">
+          <label>x*</label>
+          <input id="xend" type="number" step="any" value="1" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Método numérico</label>
+        <select id="method">
+          <optgroup label="Paso Simple">
+            <option value="taylor1">Taylor O1</option>
+            <option value="taylor2">Taylor O2</option>
+            <option value="taylor3">Taylor O3</option>
+            <option value="taylor4">Taylor O4</option>
+            <option value="euler">Euler</option>
+            <option value="heun">Heun</option>
+            <option value="rk1">RK1</option>
+            <option value="rk2heun">RK2 Heun</option>
+            <option value="rk2ralston">RK2 Ralston</option>
+            <option value="rk2mid">RK2 Punto Medio</option>
+            <option value="rk3">RK3</option>
+            <option value="rk4" selected>RK4</option>
+          </optgroup>
+          <optgroup label="Paso Múltiple">
+            <option value="ab2">Adams-Bashforth 2 pasos</option>
+            <option value="ab3">Adams-Bashforth 3 pasos</option>
+            <option value="ab4">Adams-Bashforth 4 pasos</option>
+            <option value="am2">Adams-Moulton 2 pasos</option>
+            <option value="am3">Adams-Moulton 3 pasos</option>
+            <option value="am4">Adams-Moulton 4 pasos</option>
+          </optgroup>
+          <optgroup label="Predictor-Corrector">
+            <option value="abm4">Adams-Bashforth-Moulton 4 pasos</option>
+            <option value="milnesimpson">Milne-Simpson</option>
+            <option value="milnehamming">Milne-Hamming</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <button class="btn" onclick="simulate()">Simular</button>
+      <div id="error" class="error hidden"></div>
+    </div>
+
+    <!-- METRICAS -->
+    <div class="panel" id="metrics-panel" style="display:none;">
+      <h2 id="metrics-title">Métricas</h2>
+      <div class="metrics-grid" id="metrics-grid"></div>
+    </div>
+  </div>
+
+  <!-- GRAFICA -->
+  <div class="panel mb hidden" id="chart-panel">
+    <h2>Gráfica Comparativa</h2>
+    <div class="chart-wrap">
+      <canvas id="myChart"></canvas>
+    </div>
+  </div>
+
+  <!-- TABLA -->
+  <div class="panel mb hidden" id="table-panel">
+    <h2>Tabla de Iteraciones</h2>
+    <div class="table-wrap">
+      <table>
+        <thead id="table-head"></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// =============================================
+//  PARSEO DE FUNCIONES
+// =============================================
+function parseF(expr) {
+  const s = expr
+    .replace(/\^/g, '**')
+    .replace(/\bsin\b/g,'Math.sin')
+    .replace(/\bcos\b/g,'Math.cos')
+    .replace(/\btan\b/g,'Math.tan')
+    .replace(/\bexp\b/g,'Math.exp')
+    .replace(/\blog\b/g,'Math.log')
+    .replace(/\bsqrt\b/g,'Math.sqrt')
+    .replace(/\babs\b/g,'Math.abs')
+    .replace(/\bpow\b/g,'Math.pow')
+    .replace(/\bPI\b/g,'Math.PI')
+    .replace(/\bE\b/g,'Math.E')
+    .replace(/Math\.Math\./g,'Math.');
+  const fn = new Function('x','y','"use strict"; return (' + s + ');');
+  fn(0,0); // test
+  return fn;
+}
+
+function parseExact(expr) {
+  if (!expr || !expr.trim()) return null;
+  const s = expr
+    .replace(/\^/g, '**')
+    .replace(/\bsin\b/g,'Math.sin')
+    .replace(/\bcos\b/g,'Math.cos')
+    .replace(/\btan\b/g,'Math.tan')
+    .replace(/\bexp\b/g,'Math.exp')
+    .replace(/\blog\b/g,'Math.log')
+    .replace(/\bsqrt\b/g,'Math.sqrt')
+    .replace(/\babs\b/g,'Math.abs')
+    .replace(/\bpow\b/g,'Math.pow')
+    .replace(/\bPI\b/g,'Math.PI')
+    .replace(/\bE\b/g,'Math.E')
+    .replace(/Math\.Math\./g,'Math.');
+  const fn = new Function('x','"use strict"; return (' + s + ');');
+  fn(1); // test
+  return fn;
+}
+
+// =============================================
+//  DERIVADAS NUMERICAS
+// =============================================
+function dfdx(f,x,y,e=1e-6){ return (f(x+e,y)-f(x-e,y))/(2*e); }
+function dfdy(f,x,y,e=1e-6){ return (f(x,y+e)-f(x,y-e))/(2*e); }
+function fPrime(f,x,y){ return dfdx(f,x,y)+dfdy(f,x,y)*f(x,y); }
+function fPrime2(f,x,y,e=1e-5){
+  const fp=(xx,yy)=>dfdx(f,xx,yy)+dfdy(f,xx,yy)*f(xx,yy);
+  return (fp(x+e,y)-fp(x-e,y))/(2*e) + dfdy(f,x,y)*fPrime(f,x,y);
+}
+function fPrime3(f,x,y,e=1e-4){
+  const fp=(xx,yy)=>dfdx(f,xx,yy)+dfdy(f,xx,yy)*f(xx,yy);
+  const fpp2=(xx,yy)=>{
+    const fp2=(x2,y2)=>dfdx(f,x2,y2)+dfdy(f,x2,y2)*f(x2,y2);
+    return (fp2(xx+e,yy)-fp2(xx-e,yy))/(2*e)+dfdy(f,xx,yy)*fp(xx,yy);
+  };
+  return (fpp2(x+e,y)-fpp2(x-e,y))/(2*e)+dfdy(f,x,y)*fPrime2(f,x,y,e);
+}
+
+// =============================================
+//  RK4 PASO ÚNICO
+// =============================================
+function rk4step(f,x,y,h){
+  const k1=f(x,y);
+  const k2=f(x+h/2,y+h*k1/2);
+  const k3=f(x+h/2,y+h*k2/2);
+  const k4=f(x+h,y+h*k3);
+  return y+h/6*(k1+2*k2+2*k3+k4);
+}
+
+function bootstrap(f,x0,y0,h,n){
+  const r=[y0]; let x=x0, y=y0;
+  for(let i=0;i<n;i++){ y=rk4step(f,x,y,h); x=x0+(i+1)*h; r.push(y); }
+  return r;
+}
+
+// =============================================
+//  TODOS LOS METODOS
+// =============================================
+const METHODS = {
+  taylor1(f,x0,y0,h,n){
+    const r=[y0]; let x=x0,y=y0;
+    for(let i=0;i<n;i++){y+=h*f(x,y);x=x0+(i+1)*h;r.push(y);}
+    return r;
+  },
+  taylor2(f,x0,y0,h,n){
+    const r=[y0]; let x=x0,y=y0;
+    for(let i=0;i<n;i++){
+      const fv=f(x,y),fp=fPrime(f,x,y);
+      y+=h*fv+h*h/2*fp; x=x0+(i+1)*h; r.push(y);
+    }
+    return r;
+  },
+  taylor3(f,x0,y0,h,n){
+    const r=[y0]; let x=x0,y=y0;
+    for(let i=0;i<n;i++){
+      const fv=f(x,y),fp=fPrime(f,x,y),fp2=fPrime2(f,x,y);
+      y+=h*fv+h*h/2*fp+h**3/6*fp2; x=x0+(i+1)*h; r.push(y);
+    }
+    return r;
+  },
+  taylor4(f,x0,y0,h,n){
+    const r=[y0]; let x=x0,y=y0;
+    for(let i=0;i<n;i++){
+      const fv=f(x,y),fp=fPrime(f,x,y),fp2=fPrime2(f,x,y),fp3=fPrime3(f,x,y);
+      y+=h*fv+h*h/2*fp+h**3/6*fp2+h**4/24*fp3; x=x0+(i+1)*h; r.push(y);
+    }
+    return r;
+  },
+  euler(f,x0,y0,h,n){
+    return METHODS.taylor1(f,x0,y0,h,n);
+  },
+  heun(f,x0,y0,h,n){
+    const r=[y0]; let x=x0,y=y0;
+    for(let i=0;i<n;i++){
+      const k1=f(x,y),k2=f(x+h,y+h*k1);
+      y+=h/2*(k1+k2); x=x0+(i+1)*h; r.push(y);
+    }
+    return r;
+  },
+  rk1(f,x0,y0,h,n){ return METHODS.euler(f,x0,y0,h,n); },
+  rk2heun(f,x0,y0,h,n){ return METHODS.heun(f,x0,y0,h,n); },
+  rk2ralston(f,x0,y0,h,n){
+    const r=[y0]; let x=x0,y=y0;
+    for(let i=0;i<n;i++){
+      const k1=f(x,y),k2=f(x+2/3*h,y+2/3*h*k1);
+      y+=h*(1/4*k1+3/4*k2); x=x0+(i+1)*h; r.push(y);
+    }
+    return r;
+  },
+  rk2mid(f,x0,y0,h,n){
+    const r=[y0]; let x=x0,y=y0;
+    for(let i=0;i<n;i++){
+      const k1=f(x,y),k2=f(x+h/2,y+h/2*k1);
+      y+=h*k2; x=x0+(i+1)*h; r.push(y);
+    }
+    return r;
+  },
+  rk3(f,x0,y0,h,n){
+    const r=[y0]; let x=x0,y=y0;
+    for(let i=0;i<n;i++){
+      const k1=f(x,y),k2=f(x+h/2,y+h/2*k1),k3=f(x+h,y-h*k1+2*h*k2);
+      y+=h/6*(k1+4*k2+k3); x=x0+(i+1)*h; r.push(y);
+    }
+    return r;
+  },
+  rk4(f,x0,y0,h,n){ return bootstrap(f,x0,y0,h,n); },
+  ab2(f,x0,y0,h,n){
+    if(n<2) return bootstrap(f,x0,y0,h,n);
+    const r=bootstrap(f,x0,y0,h,1);
+    for(let i=1;i<n;i++){
+      const fn=f(x0+i*h,r[i]),fn1=f(x0+(i-1)*h,r[i-1]);
+      r.push(r[i]+h*(3/2*fn-1/2*fn1));
+    }
+    return r;
+  },
+  ab3(f,x0,y0,h,n){
+    if(n<3) return bootstrap(f,x0,y0,h,n);
+    const r=bootstrap(f,x0,y0,h,2);
+    for(let i=2;i<n;i++){
+      const fn=f(x0+i*h,r[i]),fn1=f(x0+(i-1)*h,r[i-1]),fn2=f(x0+(i-2)*h,r[i-2]);
+      r.push(r[i]+h*(23/12*fn-16/12*fn1+5/12*fn2));
+    }
+    return r;
+  },
+  ab4(f,x0,y0,h,n){
+    if(n<4) return bootstrap(f,x0,y0,h,n);
+    const r=bootstrap(f,x0,y0,h,3);
+    for(let i=3;i<n;i++){
+      const fn=f(x0+i*h,r[i]),fn1=f(x0+(i-1)*h,r[i-1]),fn2=f(x0+(i-2)*h,r[i-2]),fn3=f(x0+(i-3)*h,r[i-3]);
+      r.push(r[i]+h*(55/24*fn-59/24*fn1+37/24*fn2-9/24*fn3));
+    }
+    return r;
+  },
+  am2(f,x0,y0,h,n){
+    if(n<2) return bootstrap(f,x0,y0,h,n);
+    const r=bootstrap(f,x0,y0,h,1);
+    for(let i=1;i<n;i++){
+      const fn=f(x0+i*h,r[i]),fn1=f(x0+(i-1)*h,r[i-1]);
+      const yp=r[i]+h*(3/2*fn-1/2*fn1);
+      r.push(r[i]+h*(5/12*f(x0+(i+1)*h,yp)+8/12*fn-1/12*fn1));
+    }
+    return r;
+  },
+  am3(f,x0,y0,h,n){
+    if(n<3) return bootstrap(f,x0,y0,h,n);
+    const r=bootstrap(f,x0,y0,h,2);
+    for(let i=2;i<n;i++){
+      const fn=f(x0+i*h,r[i]),fn1=f(x0+(i-1)*h,r[i-1]),fn2=f(x0+(i-2)*h,r[i-2]);
+      const yp=r[i]+h*(23/12*fn-16/12*fn1+5/12*fn2);
+      r.push(r[i]+h*(9/24*f(x0+(i+1)*h,yp)+19/24*fn-5/24*fn1+1/24*fn2));
+    }
+    return r;
+  },
+  am4(f,x0,y0,h,n){
+    if(n<4) return bootstrap(f,x0,y0,h,n);
+    const r=bootstrap(f,x0,y0,h,3);
+    for(let i=3;i<n;i++){
+      const fn=f(x0+i*h,r[i]),fn1=f(x0+(i-1)*h,r[i-1]),fn2=f(x0+(i-2)*h,r[i-2]),fn3=f(x0+(i-3)*h,r[i-3]);
+      const yp=r[i]+h*(55/24*fn-59/24*fn1+37/24*fn2-9/24*fn3);
+      r.push(r[i]+h*(251/720*f(x0+(i+1)*h,yp)+646/720*fn-264/720*fn1+106/720*fn2-19/720*fn3));
+    }
+    return r;
+  },
+  abm4(f,x0,y0,h,n){
+    if(n<4) return bootstrap(f,x0,y0,h,n);
+    const r=bootstrap(f,x0,y0,h,3);
+    for(let i=3;i<n;i++){
+      const fn=f(x0+i*h,r[i]),fn1=f(x0+(i-1)*h,r[i-1]),fn2=f(x0+(i-2)*h,r[i-2]),fn3=f(x0+(i-3)*h,r[i-3]);
+      const yp=r[i]+h*(55/24*fn-59/24*fn1+37/24*fn2-9/24*fn3);
+      r.push(r[i]+h/24*(9*f(x0+(i+1)*h,yp)+19*fn-5*fn1+fn2));
+    }
+    return r;
+  },
+  milnesimpson(f,x0,y0,h,n){
+    if(n<4) return bootstrap(f,x0,y0,h,n);
+    const r=bootstrap(f,x0,y0,h,3);
+    for(let i=3;i<n;i++){
+      const fn=f(x0+i*h,r[i]),fn1=f(x0+(i-1)*h,r[i-1]),fn2=f(x0+(i-2)*h,r[i-2]);
+      const yp=r[i-3]+4*h/3*(2*fn-fn1+2*fn2);
+      r.push(r[i-1]+h/3*(f(x0+(i+1)*h,yp)+4*fn+fn1));
+    }
+    return r;
+  },
+  milnehamming(f,x0,y0,h,n){
+    if(n<4) return bootstrap(f,x0,y0,h,n);
+    const r=bootstrap(f,x0,y0,h,3);
+    for(let i=3;i<n;i++){
+      const fn=f(x0+i*h,r[i]),fn1=f(x0+(i-1)*h,r[i-1]),fn2=f(x0+(i-2)*h,r[i-2]);
+      const yp=r[i-3]+4*h/3*(2*fn-fn1+2*fn2);
+      const fmod=f(x0+(i+1)*h,yp);
+      r.push((9*r[i]-r[i-2])/8+3*h/8*(fmod+2*fn-fn1));
+    }
+    return r;
+  }
+};
+
+const METHOD_LABELS = {
+  taylor1:'Taylor O1',taylor2:'Taylor O2',taylor3:'Taylor O3',taylor4:'Taylor O4',
+  euler:'Euler',heun:'Heun',rk1:'RK1',rk2heun:'RK2 Heun',rk2ralston:'RK2 Ralston',
+  rk2mid:'RK2 Punto Medio',rk3:'RK3',rk4:'RK4',
+  ab2:'Adams-Bashforth 2',ab3:'Adams-Bashforth 3',ab4:'Adams-Bashforth 4',
+  am2:'Adams-Moulton 2',am3:'Adams-Moulton 3',am4:'Adams-Moulton 4',
+  abm4:'Adams-Bashforth-Moulton 4',milnesimpson:'Milne-Simpson',milnehamming:'Milne-Hamming'
+};
+
+// =============================================
+//  CHART INSTANCE
+// =============================================
+let chartInstance = null;
+
+// =============================================
+//  SIMULAR
+// =============================================
+function simulate(){
+  const errEl=document.getElementById('error');
+  errEl.classList.add('hidden'); errEl.textContent='';
+
+  try {
+    const dydxExpr=document.getElementById('dydx').value.trim();
+    const exactExpr=document.getElementById('exact').value.trim();
+    const x0=parseFloat(document.getElementById('x0').value);
+    const y0=parseFloat(document.getElementById('y0').value);
+    const h=parseFloat(document.getElementById('h').value);
+    const xend=parseFloat(document.getElementById('xend').value);
+    const methodKey=document.getElementById('method').value;
+
+    if(isNaN(x0)||isNaN(y0)||isNaN(h)||isNaN(xend)) throw new Error('Todos los parámetros numéricos son requeridos');
+    if(h<=0) throw new Error('El paso h debe ser positivo');
+    if(xend<=x0) throw new Error('x* debe ser mayor que x₀');
+
+    const f=parseF(dydxExpr);
+    const fe=parseExact(exactExpr);
+    const n=Math.round((xend-x0)/h);
+    const methodFn=METHODS[methodKey];
+    if(!methodFn) throw new Error('Método desconocido');
+
+    const yVals=methodFn(f,x0,y0,h,n);
+
+    // Build steps
+    const steps=[];
+    for(let i=0;i<=n;i++){
+      const x=x0+i*h;
+      const yApprox=yVals[i]??NaN;
+      const yExact=fe?fe(x):null;
+      const absErr=yExact!==null?Math.abs(yApprox-yExact):null;
+      const relErr=(yExact!==null&&yExact!==0)?absErr/Math.abs(yExact)*100:null;
+      steps.push({step:i,x,yApprox,yExact,absErr,relErr});
+    }
+
+    renderMetrics(steps,methodKey);
+    renderChart(steps);
+    renderTable(steps);
+
+  } catch(e){
+    errEl.textContent='Error: '+e.message;
+    errEl.classList.remove('hidden');
+  }
+}
+
+function fmt(n,d=10){ return typeof n==='number'&&!isNaN(n)?n.toFixed(d):'—'; }
+function fmtE(n){ return typeof n==='number'&&!isNaN(n)?n.toExponential(4):'—'; }
+
+function renderMetrics(steps,methodKey){
+  const last=steps[steps.length-1];
+  const grid=document.getElementById('metrics-grid');
+  const title=document.getElementById('metrics-title');
+  title.textContent='Métricas — '+METHOD_LABELS[methodKey];
+  grid.innerHTML='';
+
+  const add=(label,val,cls)=>{
+    grid.innerHTML+=`<div class="metric"><span class="metric-label">${label}</span><span class="metric-value ${cls}">${val}</span></div>`;
+  };
+  add('y aproximado',fmt(last.yApprox),'c-cyan');
+  if(last.yExact!==null) add('y exacto',fmt(last.yExact),'c-orange');
+  if(last.absErr!==null) add('Error absoluto',fmtE(last.absErr),'c-red');
+  if(last.relErr!==null) add('Error relativo',last.relErr.toFixed(6)+' %','c-yellow');
+
+  document.getElementById('metrics-panel').style.display='block';
+}
+
+function renderChart(steps){
+  const panel=document.getElementById('chart-panel');
+  panel.classList.remove('hidden');
+
+  const labels=steps.map(s=>s.x.toFixed(4));
+  const approxData=steps.map(s=>s.yApprox);
+  const exactData=steps[0].yExact!==null?steps.map(s=>s.yExact):null;
+
+  if(chartInstance){ chartInstance.destroy(); chartInstance=null; }
+
+  const ctx=document.getElementById('myChart').getContext('2d');
+  const datasets=[{
+    label:'Solución Aproximada',
+    data:approxData,
+    borderColor:'#00e5ff',
+    backgroundColor:'rgba(0,229,255,0.08)',
+    borderWidth:2.5,
+    pointRadius:4,
+    pointBackgroundColor:'#00e5ff',
+    pointBorderColor:'#0a1929',
+    pointBorderWidth:2,
+    tension:0.3,
+    fill:false
+  }];
+  if(exactData){
+    datasets.push({
+      label:'Solución Exacta',
+      data:exactData,
+      borderColor:'#ff6d00',
+      backgroundColor:'rgba(255,109,0,0.08)',
+      borderWidth:2.5,
+      borderDash:[8,4],
+      pointRadius:5,
+      pointStyle:'triangle',
+      pointBackgroundColor:'#ff6d00',
+      pointBorderColor:'#0a1929',
+      pointBorderWidth:2,
+      tension:0.3,
+      fill:false
+    });
+  }
+
+  chartInstance=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'top',labels:{color:'#b0bec5',font:{size:13,family:"'JetBrains Mono',monospace"},usePointStyle:true,padding:20}},
+        tooltip:{backgroundColor:'#1a2332',titleColor:'#e0e0e0',bodyColor:'#b0bec5',borderColor:'#263238',borderWidth:1,
+          titleFont:{family:"'JetBrains Mono',monospace"},bodyFont:{family:"'JetBrains Mono',monospace"}}
+      },
+      scales:{
+        x:{title:{display:true,text:'x',color:'#78909c',font:{size:14,family:"'JetBrains Mono',monospace"}},
+          ticks:{color:'#78909c',font:{family:"'JetBrains Mono',monospace"},maxTicksLimit:15},
+          grid:{color:'rgba(255,255,255,0.06)'}},
+        y:{title:{display:true,text:'y',color:'#78909c',font:{size:14,family:"'JetBrains Mono',monospace"}},
+          ticks:{color:'#78909c',font:{family:"'JetBrains Mono',monospace"}},
+          grid:{color:'rgba(255,255,255,0.06)'}}
+      }
+    }
+  });
+}
+
+function renderTable(steps){
+  const hasExact=steps[0].yExact!==null;
+  const hasErr=steps[0].absErr!==null;
+  const hasRel=steps[0].relErr!==null;
+
+  let head='<tr><th>Paso</th><th>x_n</th><th>y_aprox</th>';
+  if(hasExact) head+='<th>y_exacto</th>';
+  if(hasErr)   head+='<th>Error Abs</th>';
+  if(hasRel)   head+='<th>Error Rel %</th>';
+  head+='</tr>';
+  document.getElementById('table-head').innerHTML=head;
+
+  let body='';
+  steps.forEach(s=>{
+    body+=`<tr>
+      <td>${s.step}</td>
+      <td>${s.x.toFixed(6)}</td>
+      <td class="c-cyan">${fmt(s.yApprox)}</td>
+      ${hasExact?`<td class="c-orange">${fmt(s.yExact)}</td>`:''}
+      ${hasErr?`<td class="c-red">${fmtE(s.absErr)}</td>`:''}
+      ${hasRel?`<td class="c-yellow">${s.relErr.toFixed(6)}</td>`:''}
+    </tr>`;
+  });
+  document.getElementById('table-body').innerHTML=body;
+  document.getElementById('table-panel').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
